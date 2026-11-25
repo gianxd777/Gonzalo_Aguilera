@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Portal Estudiantil: prototipo de navegación</title>
+<style>
+:root{--bg:#eef2f6;--sf:#fff;--ink:#14212e;--mut:#5a6b7b;--pri:#0b5fa5;--pri2:#e3effa;--ok:#18794e;--warn:#b25e00;--err:#b42318;--bd:#d3dce6;--ff:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1620;--sf:#16212d;--ink:#e8eef4;--mut:#9fb0c0;--pri:#5eb0f0;--pri2:#16334d;--ok:#4cc28a;--warn:#f0a649;--err:#ff8a7e;--bd:#2a3a4a}}
+:root[data-theme="dark"]{--bg:#0e1620;--sf:#16212d;--ink:#e8eef4;--mut:#9fb0c0;--pri:#5eb0f0;--pri2:#16334d;--ok:#4cc28a;--warn:#f0a649;--err:#ff8a7e;--bd:#2a3a4a}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 var(--ff)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--pri);outline-offset:2px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--sf);border-bottom:1px solid var(--bd)}
+.top h1{font-size:17px;margin:0}
+.top p{margin:0;color:var(--mut);font-size:13px}
+.seg{display:flex;border:1px solid var(--bd);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--sf);color:var(--ink);padding:9px 14px;min-height:44px}
+.seg button[aria-pressed=true]{background:var(--pri);color:#fff}
+.stage{padding:18px;display:flex;justify-content:center}
+.frame{container-type:inline-size;width:100%;max-width:1100px;height:660px;background:var(--sf);border:1px solid var(--bd);border-radius:14px;overflow:hidden;transition:max-width .25s}
+.frame.tab{max-width:760px}.frame.mob{max-width:380px;height:680px;border-radius:28px;border-width:6px}
+.app{display:grid;grid-template-columns:210px 1fr;height:100%}
+.side{background:var(--pri2);padding:14px 10px;display:flex;flex-direction:column;gap:4px;border-right:1px solid var(--bd)}
+.brand{font-weight:700;color:var(--pri);padding:6px 10px 14px}
+.nv{display:flex;gap:10px;align-items:center;border:0;background:none;color:var(--ink);padding:10px;border-radius:10px;text-align:left;min-height:44px}
+.nv[aria-current=page]{background:var(--pri);color:#fff}
+.nv .ic{font-size:18px;width:24px;text-align:center}
+.sp{flex:1}
+.main{display:flex;flex-direction:column;min-width:0;height:100%}
+.bar{display:flex;gap:10px;align-items:center;padding:10px 18px;border-bottom:1px solid var(--bd)}
+.bar input{flex:1;min-height:40px;border:1px solid var(--bd);border-radius:10px;padding:0 12px;background:var(--bg);color:var(--ink);min-width:0}
+.bell{border:1px solid var(--bd);background:var(--sf);color:var(--ink);border-radius:10px;min-width:44px;min-height:40px}
+.body{flex:1;overflow:auto;padding:18px}
+.crumb{font-size:13px;color:var(--mut);margin-bottom:8px}
+.crumb button{border:0;background:none;color:var(--pri);padding:0;text-decoration:underline}
+h2{margin:0 0 4px;font-size:22px}
+.sub{color:var(--mut);margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.card{border:1px solid var(--bd);border-radius:12px;padding:14px;background:var(--sf)}
+.tile{text-align:left;color:var(--ink);cursor:pointer}
+.tile:hover{border-color:var(--pri)}
+.tile b{display:block;margin:4px 0}
+.tile small{color:var(--mut)}
+.alert{border-left:4px solid var(--warn);background:var(--pri2);padding:10px 12px;border-radius:8px;margin-bottom:14px}
+.bot{display:none;border-top:1px solid var(--bd);background:var(--sf)}
+.bot button{flex:1;border:0;background:none;color:var(--mut);padding:8px 2px;min-height:56px;font-size:11px}
+.bot button[aria-current=page]{color:var(--pri);font-weight:700}
+.bot .ic{display:block;font-size:20px}
+.steps{display:flex;gap:6px;margin:6px 0 14px}
+.steps i{flex:1;height:6px;border-radius:3px;background:var(--bd)}
+.steps i.on{background:var(--pri)}
+.two{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+.crs{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--bd);border-radius:10px;margin-bottom:8px;min-height:44px}
+.crs.lock{opacity:.6}
+.crs input{width:22px;height:22px;margin-top:2px}
+.crs small{color:var(--mut);display:block}
+.tag{display:inline-block;border-radius:6px;padding:1px 8px;font-size:12px;border:1px solid var(--bd)}
+.tag.err{color:var(--err);border-color:var(--err)}.tag.ok{color:var(--ok);border-color:var(--ok)}.tag.w{color:var(--warn);border-color:var(--warn)}
+.row{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid var(--bd)}
+.acts{display:flex;gap:10px;justify-content:space-between;margin-top:16px;flex-wrap:wrap}
+.btn{border:1px solid var(--pri);background:var(--pri);color:#fff;border-radius:10px;padding:10px 18px;min-height:44px}
+.btn.g{background:none;color:var(--pri)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+.msg{color:var(--err);font-size:13px;margin-top:8px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+select,.fi{width:100%;min-height:44px;border:1px solid var(--bd);border-radius:10px;padding:0 12px;background:var(--bg);color:var(--ink);font:inherit}
+textarea.fi{padding:10px;min-height:80px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--bd);background:var(--sf);color:var(--ink);border-radius:20px;padding:8px 14px;min-height:40px}
+.tabs button[aria-pressed=true]{background:var(--pri);color:#fff;border-color:var(--pri)}
+.login{display:grid;grid-template-columns:1fr 1fr;height:100%}
+.login .l{background:var(--pri);color:#fff;padding:36px;display:flex;flex-direction:column;justify-content:center}
+.login .r{padding:36px;display:flex;flex-direction:column;justify-content:center}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:10px;z-index:9}
+.map{padding:18px;max-width:1100px;margin:0 auto}
+.tree{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px}
+.tree .card h4{margin:0 0 6px;color:var(--pri)}
+.tree ul{margin:0;padding-left:16px;font-size:13px}
+.flow{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.flow span{padding:6px 12px;border-radius:20px;background:var(--pri2)}
+.dev td,.dev th{border:1px solid var(--bd);padding:6px 10px;text-align:left;font-size:13px}
+.dev{border-collapse:collapse;width:100%}
+@container (max-width:899px){.app{grid-template-columns:64px 1fr}.nv span:not(.ic){display:none}.brand{font-size:11px;padding:6px 0;text-align:center}.grid{grid-template-columns:repeat(2,1fr)}.two{grid-template-columns:1fr}}
+@container (max-width:599px){.app{grid-template-columns:1fr;grid-template-rows:1fr auto}.side{display:none}.bot{display:flex}.grid{grid-template-columns:1fr 1fr}.login{grid-template-columns:1fr}.login .l{display:none}.login .r{padding:24px}.body{padding:14px}h2{font-size:19px}.crumb .full{display:none}}
+@media (max-width:760px){.tree{grid-template-columns:1fr 1fr}.stage{padding:8px}}
+</style>
+</head>
+<body>
+<header class="top">
+ <div><h1>Portal Integral de Servicios para Estudiantes</h1><p>Laboratorio Semana 11 · Diseño de Software · Prototipo de navegación mixta</p></div>
+ <div style="display:flex;gap:10px;flex-wrap:wrap">
+  <div class="seg" role="group" aria-label="Vista"><button id="v-p" aria-pressed="true">Prototipo</button><button id="v-m" aria-pressed="false">Mapa de navegación</button></div>
+  <div class="seg" role="group" aria-label="Dispositivo" id="devs"><button data-d="pc" aria-pressed="true">PC</button><button data-d="tab" aria-pressed="false">Tableta</button><button data-d="mob" aria-pressed="false">Celular</button></div>
+ </div>
+</header>
+<main>
+ <div class="stage" id="stage"><div class="frame" id="frame"><div id="app" style="height:100%"></div></div></div>
+ <div class="map" id="map" hidden></div>
+</main>
+<script>
+const NAV=[["home","🏠","Inicio"],["insc","🎓","Inscripción"],["hist","📄","Historial"],["tram","📝","Trámites"]];
+const CRS=[
+{id:"c1",n:"Diseño de Software",cr:4,d:"Lun",h:"08–10"},
+{id:"c2",n:"Base de Datos II",cr:4,d:"Lun",h:"08–10"},
+{id:"c3",n:"Redes de Computadoras",cr:4,d:"Mar",h:"10–12"},
+{id:"c4",n:"Ingeniería de Requisitos",cr:3,d:"Mié",h:"08–10"},
+{id:"c5",n:"Inteligencia Artificial",cr:4,d:"Jue",h:"14–16",lock:"Requiere aprobar Estadística II"},
+{id:"c6",n:"Gestión de Proyectos",cr:3,d:"Vie",h:"10–12"}];
+const HIST=[["2025-II",[["Programación II",16],["Estadística I",14],["Arquitectura de Computadoras",15]]],["2026-I",[["Estructuras de Datos",17],["Base de Datos I",15],["Análisis de Sistemas",18]]]];
+const CERT=["Certificado de estudios","Constancia de matrícula","Constancia de egresado"];
+const S={dev:"pc",scr:"login",step:1,sel:new Set(["c1"]),done:null,tab:"cert",ct:CERT[0],cs:1,sent:[["Constancia de matrícula","Atendido"],["Reclamo de nota","En revisión"]],cc:null};
+const $=s=>document.querySelector(s);
+const cred=()=>CRS.filter(c=>S.sel.has(c.id)).reduce((a,c)=>a+c.cr,0);
+const conf=()=>{const m={},o=[];CRS.filter(c=>S.sel.has(c.id)).forEach(c=>{const k=c.d+c.h;(m[k]=m[k]||[]).push(c)});for(const k in m)if(m[k].length>1)o.push(m[k]);return o};
+function toast(t){const e=document.createElement("div");e.className="toast";e.setAttribute("role","status");e.textContent=t;document.body.append(e);setTimeout(()=>e.remove(),2200)}
+function go(s,extra){S.scr=s;S.step=1;S.cs=1;S.done=null;S.cc=null;if(extra)Object.assign(S,extra);render()}
+const TITLES={home:"Inicio",insc:"Inscripción de cursos",hist:"Historial académico",tram:"Trámites y requerimientos"};
+function crumb(){const t=TITLES[S.scr];return `<div class="crumb"><button data-go="home">Inicio</button> › ${S.scr==="home"?"":t}</div>`}
+function steps(n,t){return `<div class="steps" aria-label="Paso ${n} de ${t}">${Array.from({length:t},(_,i)=>`<i class="${i<n?"on":""}"></i>`).join("")}</div><p class="sub">Paso ${n} de ${t}</p>`}
+function vHome(){return `${crumb()}<h2>Hola, estudiante</h2><p class="sub">Ciclo 2026-II · Todo lo que necesitas en un solo lugar.</p>
+<div class="alert" role="alert"><b>La matrícula cierra el 30 de noviembre.</b> Tienes 1 curso sin confirmar.</div>
+<div class="grid">${[["insc","🎓","Inscribir cursos","Matrícula 2026-II"],["hist","📄","Ver mis notas","Historial y promedio"],["tram","📝","Solicitar certificado","Estudios, matrícula"],["tram","📬","Mis solicitudes","2 en seguimiento"]].map(a=>`<button class="card tile" data-go="${a[0]}" ${a[2]==="Mis solicitudes"?'data-tab="mis"':""}><span style="font-size:24px">${a[1]}</span><b>${a[2]}</b><small>${a[3]}</small></button>`).join("")}</div>`}
+function vInsc(){
+const cf=conf(),c=cred(),n=S.step;let b="";
+if(S.done)return `${crumb()}<div class="card" role="status"><h2>✔ Inscripción confirmada</h2><p class="sub">Código de comprobante: <b>${S.done}</b>. Te enviamos una notificación.</p><div class="acts"><button class="btn g" data-go="home">Volver al inicio</button><button class="btn" data-act="reset">Ver mi horario</button></div></div>`;
+if(n===1)b=`<div>${CRS.map(x=>`<label class="crs ${x.lock?"lock":""}" style="margin:0 0 8px;color:var(--ink);font-size:15px"><input type="checkbox" data-c="${x.id}" ${S.sel.has(x.id)?"checked":""} ${x.lock?"disabled":""}><span><b>${x.n}</b> · ${x.cr} cr.<small>${x.d} ${x.h}${x.lock?` · 🔒 ${x.lock}`:""}</small></span></label>`).join("")}</div>`;
+if(n===2)b=`<div class="two"><div>${CRS.filter(x=>S.sel.has(x.id)).map(x=>`<div class="row"><span><b>${x.d} ${x.h}</b> · ${x.n}</span>${cf.flat().includes(x)?'<span class="tag err">Cruce</span>':'<span class="tag ok">Libre</span>'}</div>`).join("")||"<p>No hay cursos seleccionados.</p>"}</div><div class="card"><b>Créditos</b><div style="font-size:26px">${c}/22</div></div></div>${cf.length?`<p class="msg" role="alert">Hay un cruce de horario: ${cf[0].map(x=>x.n).join(" y ")}. Quita uno para continuar.</p>`:""}`;
+if(n===3)b=`<div class="card"><b>Revisa antes de confirmar</b>${CRS.filter(x=>S.sel.has(x.id)).map(x=>`<div class="row"><span>${x.n}</span><span>${x.cr} cr.</span></div>`).join("")}<div class="row"><b>Total</b><b>${c} créditos</b></div></div>`;
+const dis=n===1?(c===0||c>22):n===2?(cf.length>0):false;
+const why=n===1&&c===0?"Elige al menos un curso.":n===1&&c>22?"Superaste el máximo de 22 créditos.":"";
+return `${crumb()}<h2>Inscripción de cursos</h2>${steps(n,3)}${b}${why?`<p class="msg" role="alert">${why}</p>`:""}<div class="acts"><button class="btn g" data-act="back">${n===1?"Cancelar":"← Atrás"}</button><button class="btn" data-act="next" ${dis?"disabled":""}>${n===3?"Confirmar inscripción":"Continuar →"}</button></div>`}
+function vHist(){const all=HIST.flatMap(t=>t[1]),p=(all.reduce((a,x)=>a+x[1],0)/all.length).toFixed(1);
+return `${crumb()}<h2>Historial académico</h2><p class="sub">Promedio ponderado: <b>${p}</b></p>${HIST.map(t=>`<div class="card" style="margin-bottom:12px"><b>${t[0]}</b>${t[1].map(x=>`<div class="row"><span>${x[0]}</span><span class="tag ${x[1]>=14?"ok":"w"}">${x[1]}</span></div>`).join("")}</div>`).join("")}<button class="btn" data-go="tram" data-tab="cert">Solicitar certificado de estudios</button>`}
+function vTram(){
+let h=`${crumb()}<h2>Trámites y requerimientos</h2><div class="tabs" role="group">${[["cert","Certificado"],["req","Requerimiento"],["mis","Mis solicitudes"]].map(t=>`<button data-tab="${t[0]}" aria-pressed="${S.tab===t[0]}">${t[1]}</button>`).join("")}</div>`;
+if(S.tab==="mis")return h+`<div class="card">${S.sent.map(s=>`<div class="row"><span>${s[0]}</span><span class="tag ${s[1]==="Atendido"?"ok":"w"}">${s[1]}</span></div>`).join("")}</div>`;
+if(S.tab==="req"){if(S.cc==="req")return h+`<div class="card" role="status"><b>✔ Requerimiento enviado</b><p class="sub">Responderemos en 3 días hábiles. Sigue el estado en “Mis solicitudes”.</p></div>`;
+return h+`<label for="rc">Categoría</label><select id="rc"><option>Reclamo de nota</option><option>Reserva de vacante</option><option>Cambio de turno</option></select><label for="rd">Describe tu solicitud</label><textarea class="fi" id="rd"></textarea><p class="msg" id="rm" role="alert"></p><div class="acts"><span></span><button class="btn" data-act="sendreq">Enviar requerimiento</button></div>`}
+if(S.cc==="cert")return h+`<div class="card" role="status"><b>✔ Solicitud registrada</b><p class="sub">${S.ct}. Recibirás un aviso cuando esté listo.</p><button class="btn g" data-tab="mis">Ver seguimiento</button></div>`;
+const n=S.cs,b=n===1?`<label for="ct">Tipo de documento</label><select id="ct">${CERT.map(c=>`<option ${c===S.ct?"selected":""}>${c}</option>`).join("")}</select>`:n===2?`<div class="card"><div class="row"><span>Documento</span><b>${S.ct}</b></div><div class="row"><span>Costo</span><b>S/ 15.00</b></div><div class="row"><span>Entrega</span><b>Digital, 48 horas</b></div></div>`:`<div class="card"><b>Confirma tu solicitud</b><p class="sub">${S.ct} · S/ 15.00. Puedes volver y cambiar los datos.</p></div>`;
+return h+steps(n,3)+b+`<div class="acts"><button class="btn g" data-act="cback">${n===1?"Cancelar":"← Atrás"}</button><button class="btn" data-act="cnext">${n===3?"Enviar solicitud":"Continuar →"}</button></div>`}
+function vLogin(){return `<div class="login"><div class="l"><h2>Un solo acceso</h2><p>Matrícula, notas, certificados y trámites en un único portal.</p></div><div class="r"><h2>Iniciar sesión</h2><p class="sub">Usa tus credenciales institucionales.</p><label for="u">Código de estudiante</label><input class="fi" id="u" autocomplete="username" value="2026-0457"><label for="pw">Contraseña</label><input class="fi" id="pw" type="password" autocomplete="current-password" value="demo1234"><div class="acts"><button class="btn g" data-act="forgot">¿Olvidaste tu contraseña?</button><button class="btn" data-go="home">Ingresar</button></div></div></div>`}
+function render(){
+const a=$("#app"),f=$("#frame");f.className="frame "+S.dev;
+if(S.scr==="login"){a.innerHTML=vLogin();return}
+const v={home:vHome,insc:vInsc,hist:vHist,tram:vTram}[S.scr]();
+const nav=NAV.map(n=>`<button class="nv" data-go="${n[0]}" ${S.scr===n[0]?'aria-current="page"':""} title="${n[2]}"><span class="ic">${n[1]}</span><span>${n[2]}</span></button>`).join("");
+const bot=NAV.map(n=>`<button data-go="${n[0]}" ${S.scr===n[0]?'aria-current="page"':""}><span class="ic">${n[1]}</span>${n[2]}</button>`).join("")+`<button data-go="login"><span class="ic">👤</span>Salir</button>`;
+a.innerHTML=`<div class="app"><nav class="side" aria-label="Menú principal"><div class="brand">Portal UNI</div>${nav}<div class="sp"></div><button class="nv" data-go="login"><span class="ic">🚪</span><span>Cerrar sesión</span></button></nav><section class="main"><div class="bar"><input type="search" placeholder="Buscar trámite, curso o servicio" aria-label="Buscador global" id="q"><button class="bell" aria-label="Notificaciones" data-act="bell">🔔</button></div><div class="body">${v}</div><nav class="bot" aria-label="Menú inferior">${bot}</nav></section></div>`}
+document.addEventListener("click",e=>{
+const t=e.target.closest("[data-go],[data-act],[data-tab],#v-p,#v-m,[data-d]");if(!t)return;
+if(t.id==="v-p"||t.id==="v-m"){const p=t.id==="v-p";$("#stage").hidden=!p;$("#map").hidden=p;$("#v-p").setAttribute("aria-pressed",p);$("#v-m").setAttribute("aria-pressed",!p);return}
+if(t.dataset.d){S.dev=t.dataset.d;document.querySelectorAll("#devs button").forEach(b=>b.setAttribute("aria-pressed",b===t));render();return}
+const ac=t.dataset.act;
+if(t.dataset.tab&&!ac){S.tab=t.dataset.tab;S.cc=null;S.cs=1;if(!t.dataset.go){render();return}}
+if(t.dataset.go){go(t.dataset.go);return}
+if(ac==="next"){if(S.step===3){S.done="MAT-"+Math.floor(1000+Math.random()*9000);toast("Inscripción confirmada")}else S.step++;render()}
+if(ac==="back"){if(S.step===1)go("home");else{S.step--;render()}}
+if(ac==="reset")go("hist");
+if(ac==="cnext"){if(S.cs===3){S.cc="cert";S.sent.unshift([S.ct,"Recibido"]);toast("Solicitud enviada")}else S.cs++;render()}
+if(ac==="cback"){if(S.cs===1)go("home");else{S.cs--;render()}}
+if(ac==="sendreq"){const d=$("#rd").value.trim();if(!d){$("#rm").textContent="Describe tu solicitud para poder enviarla.";$("#rd").focus();return}S.sent.unshift([$("#rc").value,"Recibido"]);S.cc="req";toast("Requerimiento enviado");render()}
+if(ac==="forgot")toast("Enviaremos un enlace a tu correo institucional");
+if(ac==="bell")toast("Sin avisos nuevos");
+});
+document.addEventListener("change",e=>{const t=e.target;if(t.dataset.c){t.checked?S.sel.add(t.dataset.c):S.sel.delete(t.dataset.c);render()}if(t.id==="ct")S.ct=t.value});
+$("#map").innerHTML=`<h2>Mapa de navegación</h2><p class="sub">Estructura mixta: jerarquía de 3 niveles, asistentes lineales y accesos contextuales.</p>
+<div class="flow"><span>Login único</span>→<span>Inicio / Panel</span>→<span>Módulo</span>→<span>Función</span>→<span>Asistente (si aplica)</span>→<span>Confirmación y comprobante</span>→<span>Seguimiento / Salir</span></div>
+<div class="tree">
+<div class="card"><h4>Inicio</h4><ul><li>Alertas de plazos</li><li>4 accesos rápidos</li><li>Buscador global</li></ul></div>
+<div class="card"><h4>Académico</h4><ul><li>Inscripción (3 pasos)</li><li>Historial y notas</li><li>Horario</li><li>Avance curricular</li></ul></div>
+<div class="card"><h4>Trámites</h4><ul><li>Certificado (3 pasos)</li><li>Mis solicitudes</li></ul></div>
+<div class="card"><h4>Administrativo</h4><ul><li>Nuevo requerimiento</li><li>Seguimiento y respuestas</li></ul></div>
+<div class="card"><h4>Perfil y ayuda</h4><ul><li>Datos y seguridad</li><li>Centro de ayuda</li><li>Cerrar sesión</li></ul></div></div>
+<p class="sub" style="margin-top:14px">Enlace contextual: Historial → “Solicitar certificado de estudios”.</p>
+<h2 style="font-size:18px;margin-top:18px">Adaptación por dispositivo</h2>
+<table class="dev"><tr><th>Dispositivo</th><th>Menú</th><th>Contenido</th><th>Ubicación</th></tr><tr><td>PC (≥900 px)</td><td>Barra lateral fija</td><td>4 columnas, listas amplias</td><td>Breadcrumbs</td></tr><tr><td>Tableta (600–899 px)</td><td>Barra lateral de íconos</td><td>2 columnas</td><td>Breadcrumbs</td></tr><tr><td>Celular (&lt;600 px)</td><td>Barra inferior (5 destinos)</td><td>1 a 2 columnas, botones de 44 px</td><td>Título y botón atrás</td></tr></table>`;
+render();
+</script>
+</body>
+</html>
